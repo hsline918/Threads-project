@@ -1,56 +1,60 @@
 //1. Long term access token
-const SHORT_LIVED_ACCESS_TOKEN = ""; //generate from Graph API Explorer
-const threads_app_secret = "4d13965c4d21bc0486a0d94fb2c61b33"; // App Dashboard -> App setting -> Basic -> App secret
+function tokenService() {
+  const SHORT_LIVED_ACCESS_TOKEN =
+    "THAAP2bG4JYf5BYlZAKRjY1RFpWdkhqUk1yXzl1QW54OUUtb01keXR1UC0wUW9rR2M0c0VienFmNVlrQVkxVDFvbHhQanNieHNMeEJvRFV6VDA2LTMtV05JLS1pdEwyLWpBcENpNmgwcE9KbGRuV0U1aWdpWUd0QXZATTm94QmliRVNJcXRiSHJsLUFPSEtRN0w3dGtLUXZAsWmlRZAwZDZD";
+  const threads_app_secret = "4d13965c4d21bc0486a0d94fb2c61b33";
 
-const url = `https://graph.threads.net/access_token?grant_type=th_exchange_token
+  let currentToken = null;
+  // let expireTime = null;
+  // let refreshTimer = null;
+
+  const url = `https://graph.threads.net/access_token?grant_type=th_exchange_token
   &client_secret=${threads_app_secret}
   &access_token=${SHORT_LIVED_ACCESS_TOKEN}`;
 
-async function get_long_lived_access_token(short_lived_access_token) {
-  try {
-    const response = await fetch(url);
-    const data = response.json();
-    return data.access_token;
-  } catch (error) {
-    console.error("Error: ${error}");
+  async function get_long_lived_access_token() {
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      currentToken = data.access_token;
+      // expireTime = data.expires_in * 1000;
+      // scheduleRefresh();
+      return currentToken;
+      //一定要所有的東西都放在try&catch裡面嗎？data會不會讀取不到？try裡面一定要放return嗎？這裡的try&catch邏輯是為了要防止什麼錯誤？
+    } catch (error) {
+      console.error("Error:", error);
+    }
   }
+  const token = get_long_lived_access_token();
+
+  //SetTimeInterval to control refresh timing
+
+  // const scheduleRefresh = () => {
+  //   //我要在前七天就自動更新token
+  //   const timeUntilRefresh = expireTime - 7 * 24 * 60 * 60 * 1000;
+  //   refreshTimer = setInterval(
+  //     refresh_long_lived_access_token,
+  //     timeUntilRefresh
+  //   );
+  // };
+
+  // const refresh_url = `https://graph.threads.net/refresh_access_token
+  // ?grant_type=th_refresh_token
+  // &access_token=${LONG_LIVED_ACCESS_TOKEN}`;
+
+  // async function refresh_long_lived_access_token() {
+  //   try {
+  //     const response = await fetch(refresh_url);
+  //     const data = response.json();
+  //     currentToken = data.access_token;
+  //     return currentToken;
+  //   } catch (error) {
+  //     console.error("Error: ${error}");
+  //   }
+  // }
+  return token;
 }
-const LONG_LIVED_ACCESS_TOKEN = get_long_lived_access_token(
-  SHORT_LIVED_ACCESS_TOKEN
-);
-
-//sample response:
-//  {
-//   "access_token": "<LONG_LIVED_USER_ACCESS_TOKEN>",
-//   "token_type": "bearer",
-//   "expires_in": 5183944  // number of seconds until token expires(60days)
-// }
-
-// 2. refresh long-term access token
-
-const refresh_url = `https://graph.threads.net/refresh_access_token
-  ?grant_type=th_refresh_token
-  &access_token=${LONG_LIVED_ACCESS_TOKEN}`;
-
-async function refresh_long_lived_access_token() {
-  try {
-    const response = await fetch(refresh_url);
-    const data = response.json();
-    return data.access_token;
-  } catch (error) {
-    console.error("Error: ${error}");
-  }
-}
-
-LONG_LIVED_ACCESS_TOKEN = refresh_long_lived_access_token(
-  LONG_LIVED_ACCESS_TOKEN
-);
-
-//sample response:
-// {
-//   "access_token": "<LONG_LIVED_USER_ACCESS_TOKEN>",
-//   "token_type": "bearer",
-//   "expires_in": 5183944 // number of seconds until token expires
-// }
+const result = await tokenService();
+result;
 
 // todo: 重構封装(使用閉包特性)成Token Service，只讓threads api可以access。
