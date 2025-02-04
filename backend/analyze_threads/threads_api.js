@@ -1,70 +1,10 @@
-//1. Long term access token
-function tokenService() {
-  const SHORT_LIVED_ACCESS_TOKEN =
-    "THAAP2bG4JYf5BYlZAKRjY1RFpWdkhqUk1yXzl1QW54OUUtb01keXR1UC0wUW9rR2M0c0VienFmNVlrQVkxVDFvbHhQanNieHNMeEJvRFV6VDA2LTMtV05JLS1pdEwyLWpBcENpNmgwcE9KbGRuV0U1aWdpWUd0QXZATTm94QmliRVNJcXRiSHJsLUFPSEtRN0w3dGtLUXZAsWmlRZAwZDZD";
-  const threads_app_secret = "4d13965c4d21bc0486a0d94fb2c61b33";
-
-  let currentToken = null;
-  // let expireTime = null;
-  // let refreshTimer = null;
-
-  const url = `https://graph.threads.net/access_token?grant_type=th_exchange_token
-  &client_secret=${threads_app_secret}
-  &access_token=${SHORT_LIVED_ACCESS_TOKEN}`;
-
-  async function get_long_lived_access_token() {
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      currentToken = data.access_token;
-      // expireTime = data.expires_in * 1000;
-      // scheduleRefresh();
-      return currentToken;
-      //一定要所有的東西都放在try&catch裡面嗎？data會不會讀取不到？try裡面一定要放return嗎？這裡的try&catch邏輯是為了要防止什麼錯誤？
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  }
-  const token = get_long_lived_access_token();
-
-  //SetTimeInterval to control refresh timing
-
-  // const scheduleRefresh = () => {
-  //   //我要在前七天就自動更新token
-  //   const timeUntilRefresh = expireTime - 7 * 24 * 60 * 60 * 1000;
-  //   refreshTimer = setInterval(
-  //     refresh_long_lived_access_token,
-  //     timeUntilRefresh
-  //   );
-  // };
-
-  // const refresh_url = `https://graph.threads.net/refresh_access_token
-  // ?grant_type=th_refresh_token
-  // &access_token=${LONG_LIVED_ACCESS_TOKEN}`;
-
-  // async function refresh_long_lived_access_token() {
-  //   try {
-  //     const response = await fetch(refresh_url);
-  //     const data = response.json();
-  //     currentToken = data.access_token;
-  //     return currentToken;
-  //   } catch (error) {
-  //     console.error("Error: ${error}");
-  //   }
-  // }
-  return token;
-}
-const result = await tokenService();
-result;
-
-// todo: 重構封装(使用閉包特性)成Token Service，只讓threads api可以access。
-
-//Quokka無法使用import所以以上是直接複製貼上access_token~看起來是可以使用的。
 // import { tokenService } from "./access_token";
 
-const token = await tokenService();
+// const token = await tokenService();
+
+//第一部分：threads media object(由於quokka不支援import所以token我直接複製貼上access_token)
 function threads_api() {
-  const media_object_url = `https://graph.threads.net/v1.0/me/threads?fields=id,media_product_type,media_type,media_url,permalink,owner,username,text,timestamp,shortcode,thumbnail_url,children,is_quote_post&limit=1&access_token=${token}`;
+  const media_object_url = `https://graph.threads.net/v1.0/me/threads?fields=id,media_product_type,media_type,media_url,permalink,owner,username,text,timestamp,shortcode,thumbnail_url,children,is_quote_post&limit=1&access_token=THAAP2bG4JYf5BYldfSjNCYlk1YTJiYzhNUUJwREhXdVBmdnhvOXpDRkZA4alJad0VFcmVyV1hZARGdXWmFhQklJOG1FdWRYdjZAURG95Mll5MnBRTVRBSFBSRUVVOVl4YlQwZAk1PMzQ4dEUyUVFpcS1fQjN5NDhLcGYydzRySFJfM1JmZAwZDZD`;
 
   async function retrieve_threads_media_objects() {
     try {
@@ -76,9 +16,90 @@ function threads_api() {
     }
   }
   const object_result = retrieve_threads_media_objects();
+  // object_result;
 
   return object_result;
 }
 
-const object = await threads_api();
-object;
+const threads_media_object_api = await threads_api();
+// threads_media_object_api;
+const {
+  data: [media],
+} = threads_media_object_api;
+
+const THREADS_MEDIA_ID = media.id;
+
+//第二部分：post insights
+function postInsights() {
+  const post_insight_url = `https://graph.threads.net/v1.0/${THREADS_MEDIA_ID}/insights?metric=views,likes,replies,reposts,quotes,shares&access_token=THAAP2bG4JYf5BYldfSjNCYlk1YTJiYzhNUUJwREhXdVBmdnhvOXpDRkZA4alJad0VFcmVyV1hZARGdXWmFhQklJOG1FdWRYdjZAURG95Mll5MnBRTVRBSFBSRUVVOVl4YlQwZAk1PMzQ4dEUyUVFpcS1fQjN5NDhLcGYydzRySFJfM1JmZAwZDZD`;
+
+  async function retrieve_threads_media_objects() {
+    try {
+      const response = await fetch(post_insight_url);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+  const object_result = retrieve_threads_media_objects();
+
+  return object_result;
+}
+
+const media_insights_api = await postInsights();
+// media_insights_api;
+
+//第三部分：將API回傳數據扁平化，轉換成貼文資訊以及互動資料的資料結構
+function transformThreadsData(threads_media_object_api, media_insights_api) {
+  //解構API回應的資料
+  const {
+    data: [postData],
+  } = threads_media_object_api;
+
+  const post = {
+    id: postData.id,
+    text: postData.text,
+    timestamp: postData.timestamp,
+    media_type: postData.media_type,
+    shortcode: postData.shortcode,
+    permalink: postData.permalink,
+  };
+
+  //使用reduce來把他強制寫成我想要的格式
+
+  const insights = media_insights_api.data.reduce(
+    (acc, metric) => {
+      acc[metric.name] = metric.values[0]?.value || 0;
+      return acc;
+    },
+    {
+      views: 0,
+      likes: 0,
+      replies: 0,
+      reposts: 0,
+      quotes: 0,
+      shares: 0,
+    }
+  );
+
+  return {
+    post: post,
+    insights: {
+      engagement: insights,
+      engagementHistory: [
+        {
+          timestamp: new Date().toISOString(),
+          metrics: { ...insights },
+        },
+      ],
+    },
+  };
+}
+
+const flattened = transformThreadsData(
+  threads_media_object_api,
+  media_insights_api
+);
+
+flattened;
