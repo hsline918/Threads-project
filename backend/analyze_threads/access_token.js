@@ -30,6 +30,11 @@ function tokenService() {
   //SetTimeInterval to control refresh timing
 
   const scheduleRefresh = () => {
+    // 先清除舊的計時器，不然可能會導致記憶體洩漏的問題。(因為此段程式碼可能會多次執行，但是舊的計時器仍會存在)
+    if (refreshTimer) {
+      clearInterval(refreshTimer);
+    }
+
     //我要在過期前七天就自動更新token
     const timeUntilRefresh = expireTime - 7 * 24 * 60 * 60 * 1000;
     refreshTimer = setInterval(

@@ -37,6 +37,8 @@ function postInsights() {
     try {
       const response = await fetch(post_insight_url);
       const data = await response.json();
+      // refreshPostInsights();
+      //如果在這裡寫refreshPostInsights()會有遞迴呼叫的問題。所以要把定時器邏輯和postInsights分離
       return data;
     } catch (error) {
       console.error("Error:", error);
@@ -47,8 +49,44 @@ function postInsights() {
   return object_result;
 }
 
-const media_insights_api = await postInsights();
+let refreshTimer = null;
+// const refreshTime = 10 * 1000;
+// 24 * 60 * 60 * 1000
+
+function refreshPostInsights() {
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+  }
+  refreshTimer = setInterval(async () => {
+    try {
+      const data = await postInsights();
+      // 在這裡可以處理新獲取的資料
+      const updatedData = transformThreadsData(threads_media_object_api, data);
+
+      console.log("新的資料已更新:", updatedData);
+    } catch (error) {
+      console.error("更新資料時發生錯誤:", error);
+    }
+  }, refreshTime);
+}
+
+//  使用初始化時呼叫
+async function initializeInsights() {
+  try {
+    const initialData = await postInsights();
+    refreshPostInsights(); // 現在可以安全地啟動定時更新
+    return initialData;
+  } catch (error) {
+    console.error("初始化時發生錯誤:", error);
+    throw error;
+  }
+}
+
+const media_insights_api = await initializeInsights();
 // media_insights_api;
+
+// 建立一個狀態來存儲累積的資料
+let accumulatedData = null;
 
 //第三部分：將API回傳數據扁平化，轉換成貼文資訊以及互動資料的資料結構
 function transformThreadsData(threads_media_object_api, media_insights_api) {
@@ -68,7 +106,7 @@ function transformThreadsData(threads_media_object_api, media_insights_api) {
 
   //使用reduce來把他強制寫成我想要的格式
 
-  const insights = media_insights_api.data.reduce(
+  let currentInsights = media_insights_api.data.reduce(
     (acc, metric) => {
       acc[metric.name] = metric.values[0]?.value || 0;
       return acc;
@@ -83,18 +121,37 @@ function transformThreadsData(threads_media_object_api, media_insights_api) {
     }
   );
 
-  return {
-    post: post,
-    insights: {
-      engagement: insights,
-      engagementHistory: [
-        {
-          timestamp: new Date().toISOString(),
-          metrics: { ...insights },
-        },
-      ],
-    },
-  };
+  console.log("currentInsights:", currentInsights);
+
+  // 如果是第一次執行，初始化累積資料
+  if (!accumulatedData) {
+    accumulatedData = {
+      post: post,
+      insights: {
+        engagement: currentInsights,
+        engagementHistory: [
+          {
+            timestamp: new Date().toISOString(),
+            metrics: currentInsights,
+          },
+        ],
+      },
+    };
+  } else {
+    // 更新現有engagement數據
+    accumulatedData.insights.engagement = currentInsights;
+    // 添加新的歷史記錄
+    accumulatedData.insights.engagementHistory.push({
+      timestamp: new Date().toISOString(),
+      metrics: currentInsights,
+    });
+    console.log(
+      "看看metrics裡面是什麼",
+      accumulatedData.insights.engagementHistory
+    );
+  }
+
+  return accumulatedData;
 }
 
 const flattened = transformThreadsData(
@@ -102,4 +159,4 @@ const flattened = transformThreadsData(
   media_insights_api
 );
 
-flattened;
+// flattened;
