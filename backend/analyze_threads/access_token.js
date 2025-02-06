@@ -60,6 +60,5 @@ function tokenService() {
   return token;
 }
 const result = await tokenService();
-result;
 
 // todo: 重構封装(使用閉包特性)成Token Service，只讓threads api可以access。

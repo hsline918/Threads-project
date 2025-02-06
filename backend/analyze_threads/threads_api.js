@@ -3,6 +3,13 @@
 // const token = await tokenService();
 
 //第一部分：threads media object(由於quokka不支援import所以token我直接複製貼上access_token)
+
+let refreshTimer = null;
+// const refreshTime = 10 * 1000;
+// 24 * 60 * 60 * 1000
+
+let accumulatedData = null;
+
 function threads_api() {
   const media_object_url = `https://graph.threads.net/v1.0/me/threads?fields=id,media_product_type,media_type,media_url,permalink,owner,username,text,timestamp,shortcode,thumbnail_url,children,is_quote_post&limit=1&access_token=THAAP2bG4JYf5BYldfSjNCYlk1YTJiYzhNUUJwREhXdVBmdnhvOXpDRkZA4alJad0VFcmVyV1hZARGdXWmFhQklJOG1FdWRYdjZAURG95Mll5MnBRTVRBSFBSRUVVOVl4YlQwZAk1PMzQ4dEUyUVFpcS1fQjN5NDhLcGYydzRySFJfM1JmZAwZDZD`;
 
@@ -16,13 +23,11 @@ function threads_api() {
     }
   }
   const object_result = retrieve_threads_media_objects();
-  // object_result;
 
   return object_result;
 }
 
 const threads_media_object_api = await threads_api();
-// threads_media_object_api;
 const {
   data: [media],
 } = threads_media_object_api;
@@ -37,8 +42,6 @@ function postInsights() {
     try {
       const response = await fetch(post_insight_url);
       const data = await response.json();
-      // refreshPostInsights();
-      //如果在這裡寫refreshPostInsights()會有遞迴呼叫的問題。所以要把定時器邏輯和postInsights分離
       return data;
     } catch (error) {
       console.error("Error:", error);
@@ -49,10 +52,21 @@ function postInsights() {
   return object_result;
 }
 
-let refreshTimer = null;
-// const refreshTime = 10 * 1000;
-// 24 * 60 * 60 * 1000
+//  使用初始化時呼叫
+async function initializeInsights() {
+  try {
+    const initialData = await postInsights();
+    refreshPostInsights();
+    return initialData;
+  } catch (error) {
+    console.error("初始化時發生錯誤:", error);
+    throw error;
+  }
+}
 
+const media_insights_api = await initializeInsights();
+
+//第四部分，定時更新資料
 function refreshPostInsights() {
   if (refreshTimer) {
     clearInterval(refreshTimer);
@@ -60,7 +74,6 @@ function refreshPostInsights() {
   refreshTimer = setInterval(async () => {
     try {
       const data = await postInsights();
-      // 在這裡可以處理新獲取的資料
       const updatedData = transformThreadsData(threads_media_object_api, data);
 
       console.log("新的資料已更新:", updatedData);
@@ -70,27 +83,8 @@ function refreshPostInsights() {
   }, refreshTime);
 }
 
-//  使用初始化時呼叫
-async function initializeInsights() {
-  try {
-    const initialData = await postInsights();
-    refreshPostInsights(); // 現在可以安全地啟動定時更新
-    return initialData;
-  } catch (error) {
-    console.error("初始化時發生錯誤:", error);
-    throw error;
-  }
-}
-
-const media_insights_api = await initializeInsights();
-// media_insights_api;
-
-// 建立一個狀態來存儲累積的資料
-let accumulatedData = null;
-
 //第三部分：將API回傳數據扁平化，轉換成貼文資訊以及互動資料的資料結構
 function transformThreadsData(threads_media_object_api, media_insights_api) {
-  //解構API回應的資料
   const {
     data: [postData],
   } = threads_media_object_api;
@@ -103,8 +97,6 @@ function transformThreadsData(threads_media_object_api, media_insights_api) {
     shortcode: postData.shortcode,
     permalink: postData.permalink,
   };
-
-  //使用reduce來把他強制寫成我想要的格式
 
   let currentInsights = media_insights_api.data.reduce(
     (acc, metric) => {
@@ -123,7 +115,6 @@ function transformThreadsData(threads_media_object_api, media_insights_api) {
 
   console.log("currentInsights:", currentInsights);
 
-  // 如果是第一次執行，初始化累積資料
   if (!accumulatedData) {
     accumulatedData = {
       post: post,
@@ -138,9 +129,7 @@ function transformThreadsData(threads_media_object_api, media_insights_api) {
       },
     };
   } else {
-    // 更新現有engagement數據
     accumulatedData.insights.engagement = currentInsights;
-    // 添加新的歷史記錄
     accumulatedData.insights.engagementHistory.push({
       timestamp: new Date().toISOString(),
       metrics: currentInsights,
@@ -153,10 +142,3 @@ function transformThreadsData(threads_media_object_api, media_insights_api) {
 
   return accumulatedData;
 }
-
-const flattened = transformThreadsData(
-  threads_media_object_api,
-  media_insights_api
-);
-
-// flattened;
