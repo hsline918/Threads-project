@@ -5,7 +5,7 @@
 //第一部分：threads media object(由於quokka不支援import所以token我直接複製貼上access_token)
 
 let refreshTimer = null;
-const refreshTime = 10 * 1000;
+const refreshTime = 60 * 1000;
 // 24 * 60 * 60 * 1000
 
 let accumulatedData = null;
@@ -207,3 +207,51 @@ function checkDatabase() {
 }
 
 checkDatabase();
+
+//這裡開始設計API
+
+const express = require("express");
+const app = express();
+
+// 設定伺服器端口
+const PORT = 3000; // 你可以選擇任何可用的端口號
+
+// 啟動伺服器
+app.listen(PORT, () => {
+  console.log(`伺服器運行在 http://localhost:${PORT}`);
+});
+
+const cors = require("cors"); // 首先安裝 cors: npm install cors
+
+// 配置 CORS
+app.use(
+  cors({
+    origin: "http://localhost:5173", // 允許的前端域名
+    methods: ["GET", "POST", "PUT", "DELETE"], // 允許的 HTTP 方法
+    credentials: true, // 如果需要傳送 cookies
+  })
+);
+
+app.get("/api/trends/post/:id", (req, res) => {
+  // 準備 SQL 查詢，使用 db.prepare 來預防 SQL 注入攻擊
+  const data = db
+    .prepare(
+      `
+    SELECT 
+      timestamp,   
+      views,      
+      likes,      
+      replies,    
+      reposts,   
+      quotes,     
+      shares     
+    FROM engagement_metrics  
+    WHERE post_id = ?       
+    ORDER BY timestamp     
+  `
+    )
+    .all(req.params.id); // 執行查詢，傳入 URL 中的貼文 ID
+
+  // 將查詢結果以 JSON 格式回傳給前端
+  res.json(data);
+});
