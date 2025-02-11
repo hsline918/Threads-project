@@ -191,9 +191,19 @@ function saveThreadsData(transformedData) {
   transaction(transformedData);
 }
 
-// function checkDatabase() {
-//   // 檢查 posts 表的內容
-//   const posts = db.prepare("SELECT * FROM posts").all();
-//   console.log("貼文資料：", posts);
-// }
-// checkDatabase();
+function checkDatabase() {
+  // 連接 posts 和 engagement_metrics 表格
+  const postsWithMetrics = db
+    .prepare(
+      `
+    SELECT p.*, e.views, e.likes, e.replies, e.reposts, e.quotes, e.shares
+    FROM posts p
+    LEFT JOIN engagement_metrics e ON p.id = e.post_id
+  `
+    )
+    .all();
+
+  console.log("貼文及互動資料：", postsWithMetrics);
+}
+
+checkDatabase();
