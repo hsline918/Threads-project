@@ -1,28 +1,18 @@
+import { useState, useEffect } from "react";
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
   Tooltip,
   Legend,
-} from "chart.js";
-import { Line } from "react-chartjs-2";
+  ResponsiveContainer,
+} from "recharts";
 
-// 註冊 Chart.js 組件
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+const postId = "17980871738800826";
 
-const postId = 17980871738800826;
-// 獲取需要的圖表資料
+// 獲取資料的函數保持不變
 async function getPostTrends(postId) {
   try {
     const response = await fetch(
@@ -35,77 +25,68 @@ async function getPostTrends(postId) {
   }
 }
 
-import { useState, useEffect } from "react";
-
-// 建立圖表組件
 function ChartComponent() {
-  // 宣告 state 來存儲資料
   const [chartData, setChartData] = useState(null);
 
   useEffect(() => {
-    // 在 useEffect 中獲取資料
     async function fetchData() {
       const result = await getPostTrends(postId);
-      setChartData(result); // 將資料存入 state
+      // 直接在這裡處理資料格式
+      const formattedData = result.map((item) => ({
+        timestamp: formatTimestamp(item.timestamp),
+        views: item.views,
+      }));
+      setChartData(formattedData);
     }
 
-    fetchData(); // 呼叫函數獲取資料
-  }, []); // 空依賴陣列表示只在組件首次渲染時執行
+    fetchData();
+  }, []);
 
-  // 在資料載入前顯示載入中狀態
-  if (!chartData) {
-    return <div>載入中...</div>;
-  }
+  // 時間格式化輔助函數
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
 
-  // 資料載入後，可以使用 chartData 進行後續處理
-  console.log(chartData); // 這裡會顯示實際的資料，而不是 Promise
-
-  const formattedTimestamps = chartData.map((item) => {
-    // 建立 Date 物件
-    const date = new Date(item.timestamp);
-
-    // 取得年、月、日、時、分
-    const year = date.getFullYear();
-    // getMonth() 從 0 開始，所以要加 1
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
-
-    // 組合成想要的格式
-    return `${year}/${month}/${day} ${hours}:${minutes}`;
-  });
-
-  const views = chartData.map((item) => {
-    return item.views;
-  });
-
-  const data = {
-    labels: formattedTimestamps,
-    datasets: [
-      {
-        label: "Views",
-        data: views, //
-        borderColor: "rgb(75, 192, 192)",
-        tension: 0.1,
-      },
-    ],
+    return `${month}/${day} ${hours}:${minutes}`;
   };
 
-  // 圖表配置
-  const options = {
-    responsive: true,
-    plugins: {
-      title: {
-        display: true,
-        text: "觀看次數趨勢",
-      },
-    },
-  };
+  if (!chartData) {
+    return <div>載入中...</div>;
+  }
 
   return (
-    <div style={{ width: "80%", margin: "20px auto" }}>
-      <Line data={data} options={options} />
+    <div style={{ width: "80%", margin: "20px auto", height: "400px" }}>
+      <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
+        貼文曝光隨時間趨勢
+      </h2>
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis
+            dataKey="timestamp"
+            angle={0}
+            height={60}
+            tick={{
+              fontSize: 16,
+              dy: 14, // 向下移動文字
+            }}
+          />
+          <YAxis />
+          <Tooltip labelFormatter={() => ""} />
+          <Legend />
+          <Line
+            type="monotone"
+            dataKey="views"
+            stroke="#4BC0C0"
+            strokeWidth={2}
+            dot={{ r: 4 }}
+            name="曝光數"
+          />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 }

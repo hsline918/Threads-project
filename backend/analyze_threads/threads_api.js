@@ -5,8 +5,7 @@
 //第一部分：threads media object(由於quokka不支援import所以token我直接複製貼上access_token)
 
 let refreshTimer = null;
-const refreshTime = 60 * 1000;
-// 24 * 60 * 60 * 1000
+const refreshTime = 60 * 60 * 1000; //一小時抓一次data，
 
 let accumulatedData = null;
 

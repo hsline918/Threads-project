@@ -1,6 +1,4 @@
 import "./App.css";
-
-// src/App.jsx
 import ChartComponent from "./components/charts/ChartComponent";
 
 function App() {
