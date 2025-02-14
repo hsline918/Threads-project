@@ -1,13 +1,4 @@
-// import { tokenService } from "./access_token";
-
-// const token = await tokenService();
-
 //第一部分：threads media object(由於quokka不支援import所以token我直接複製貼上access_token)
-
-let refreshTimer = null;
-const refreshTime = 60 * 60 * 1000; //一小時抓一次data，
-
-let accumulatedData = null;
 
 function threads_api() {
   const media_object_url = `https://graph.threads.net/v1.0/me/threads?fields=id,media_product_type,media_type,media_url,permalink,owner,username,text,timestamp,shortcode,thumbnail_url,children,is_quote_post&limit=1&access_token=THAAP2bG4JYf5BYldfSjNCYlk1YTJiYzhNUUJwREhXdVBmdnhvOXpDRkZA4alJad0VFcmVyV1hZARGdXWmFhQklJOG1FdWRYdjZAURG95Mll5MnBRTVRBSFBSRUVVOVl4YlQwZAk1PMzQ4dEUyUVFpcS1fQjN5NDhLcGYydzRySFJfM1JmZAwZDZD`;
@@ -50,6 +41,9 @@ function postInsights() {
 
   return object_result;
 }
+
+let refreshTimer = null;
+const refreshTime = 1 * 1000; //一小時抓一次data，
 
 //  使用初始化時呼叫
 async function initializeInsights() {
@@ -156,8 +150,6 @@ db.exec(`
 `);
 
 function saveThreadsData(transformedData) {
-  // const { post, insights } = transformedData;
-
   // 準備 SQL 語句
   const insertPost = db.prepare(`
     INSERT OR REPLACE INTO posts 
@@ -207,20 +199,12 @@ function checkDatabase() {
 
 checkDatabase();
 
-//這裡開始設計API
+//-------------這裡開始設計API-------------------
 
-const express = require("express");
+import express from "express";
 const app = express();
 
-// 設定伺服器端口
-const PORT = 3000; // 你可以選擇任何可用的端口號
-
-// 啟動伺服器
-app.listen(PORT, () => {
-  console.log(`伺服器運行在 http://localhost:${PORT}`);
-});
-
-const cors = require("cors"); // 首先安裝 cors: npm install cors
+import cors from "cors"; // 首先安裝 cors: npm install cors
 
 // 配置 CORS
 app.use(
@@ -230,6 +214,48 @@ app.use(
     credentials: true, // 如果需要傳送 cookies
   })
 );
+
+// 添加根路由
+app.get("/", (req, res) => {
+  res.json({
+    message: "Welcome to Threads API Server",
+    endpoints: {
+      stop: "/api/stop - 停止資料收集",
+      status: "/api/status - 查看服務器狀態",
+      trends: "/api/trends/post/:id - 獲取特定貼文的趨勢數據",
+    },
+    serverTime: new Date().toISOString(),
+  });
+});
+
+// 在 Express 應用中添加關閉端點
+app.get("/api/stop", (req, res) => {
+  stopDataCollection();
+  db.close(); // 關閉資料庫連接
+  console.log("資料庫連接已關閉");
+  res.json({
+    message: "資料收集已停止",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+function stopDataCollection() {
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+    console.log("資料收集已停止");
+  }
+}
+
+// 查看狀態的路由
+app.get("/api/status", (req, res) => {
+  res.json({
+    running: refreshTimer !== null,
+    serverTime: new Date().toISOString(),
+  });
+});
+
+///!!!!!!我的data形式就定義在這裡
 
 app.get("/api/trends/post/:id", (req, res) => {
   // 準備 SQL 查詢，使用 db.prepare 來預防 SQL 注入攻擊
@@ -254,3 +280,35 @@ app.get("/api/trends/post/:id", (req, res) => {
   // 將查詢結果以 JSON 格式回傳給前端
   res.json(data);
 });
+
+// 404 錯誤處理
+app.use((req, res) => {
+  res.status(404).json({
+    error: "找不到請求的路徑",
+    path: req.path,
+  });
+});
+
+// 設定伺服器端口
+const PORT = 3000; // 你可以選擇任何可用的端口號
+
+// 啟動伺服器
+app.listen(PORT, () => {
+  console.log(`伺服器運行在 http://localhost:${PORT}`);
+});
+
+//如果定時器沒有正確清除的話，執行以下程式碼：
+// function clearAllTimers() {
+//   let id = setTimeout(function () {}, 0);
+
+//   console.log(`開始清除計時器，最後一個計時器ID: ${id}`);
+
+//   while (id >= 0) {
+//     clearInterval(id);
+//     clearTimeout(id);
+//     id--;
+//   }
+
+//   console.log("所有計時器已清除");
+// }
+// clearAllTimers();
