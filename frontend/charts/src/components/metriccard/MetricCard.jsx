@@ -1,72 +1,26 @@
-import { useThreadsMedia } from "../../hooks/api/useThreadsMedia";
-import { useThreadsInsight } from "../../hooks/api/useThreadsInsight";
-
+import { useMetricsData } from "../../hooks/metrics/useMetricData";
 export default function MetricCard() {
-  // 1. 獲取媒體資料
-  const {
-    mediaObjects,
-    loading: mediaLoading,
-    error: mediaError,
-  } = useThreadsMedia();
+  const { data, isLoading, error } = useMetricsData();
 
-  // 2. 安全地提取 mediaId
-  const mediaId = mediaObjects?.data?.[0]?.id;
-  console.log(mediaObjects?.data);
+  if (isLoading) return <div>正在載入資料...</div>;
+  if (error) return <div>{error.message}</div>;
+  if (!data) return <div>無法獲取必要資料</div>;
 
-  // 3. 獲取統計資料
-  const {
-    insights,
-    loading: insightLoading,
-    error: insightError,
-  } = useThreadsInsight("18344571964149371");
+  const { mediaId, permalink, metrics } = data;
 
-  // 4. 處理各種載入和錯誤狀態
-  if (mediaLoading) {
-    return <div>正在載入媒體資料...</div>;
-  }
-
-  if (mediaError) {
-    return <div>載入媒體資料時發生錯誤: {mediaError.message}</div>;
-  }
-
-  if (!mediaId) {
-    return <div>無法獲取媒體 ID</div>;
-  }
-
-  if (insightLoading) {
-    return <div>正在載入統計資料...</div>;
-  }
-
-  if (insightError) {
-    return <div>載入統計資料時發生錯誤: {insightError.message}</div>;
-  }
-
-  // 5. 確保 insights 存在且包含所需數據
-  if (!insights) {
-    return <div>無法獲取統計資料</div>;
-  }
-  console.log(insights.views);
-  // 6. 使用解構賦值時提供預設值，避免存取 null 的屬性
-  const {
-    views = 0,
-    likes = 0,
-    replies = 0,
-    reposts = 0,
-    quotes = 0,
-    shares = 0,
-  } = insights;
-
-  // 7. 渲染資料
   return (
     <div className="space-y-4">
       <div className="font-medium">媒體 ID: {mediaId}</div>
-      <div></div>
-      <div>觀看數: {views}</div>
-      <div>按讚數: {likes}</div>
-      <div>回覆數: {replies}</div>
-      <div>轉發數: {reposts}</div>
-      <div>引用數: {quotes}</div>
-      <div>分享數: {shares}</div>
+      <div>貼文觀看數: {metrics.views}</div>
+      <div>貼文按讚數: {metrics.likes}</div>
+      <div>貼文回覆數: {metrics.replies}</div>
+      <div>貼文轉發數: {metrics.reposts}</div>
+      <div>貼文引用數: {metrics.quotes}</div>
+      <div>貼文分享數: {metrics.shares}</div>
+      <div>粉絲數: {metrics.followersCount}</div>
+      <div>貼文互動率: {metrics.interactionRate}</div>
+      <div>破圈率: {metrics.viralRate}</div>
+      <div>貼文觀看數: {permalink}</div>
     </div>
   );
 }

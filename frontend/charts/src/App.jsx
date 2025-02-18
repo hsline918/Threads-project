@@ -1,8 +1,10 @@
 import "./App.css";
-// import ChartComponent from "./components/charts/ChartComponent";
-// import FrontPage from "./components/frontpage/Frontpage";
-// import LinkBotton from "./components/linkbotton/LinkBotton";
+import ChartComponent from "./components/charts/ChartComponent";
+import FrontPage from "./components/frontpage/Frontpage";
+import LinkBotton from "./components/linkbotton/LinkBotton";
 import MetricCard from "./components/MetricCard/MetricCard";
+import PostInsights from "./components/post insights/PostInsights";
+import Sidebar from "./components/sidebar/SideBar";
 
 function App() {
   return (
@@ -12,6 +14,8 @@ function App() {
       {/* <FrontPage /> */}
       {/* <LinkBotton /> */}
       <MetricCard />
+      {/* <PostInsights /> */}
+      {/* <Sidebar /> */}
     </div>
   );
 }

@@ -1,165 +1,185 @@
+import { useState } from "react";
+import { LineChart, Line, ResponsiveContainer } from "recharts";
 import {
-  LayoutGrid,
+  Layout,
   BarChart2,
   FileText,
   Users,
-  MessageCircle,
-  Share2,
-  Repeat2,
+  MessageSquare,
+  ChevronDown,
+  Settings,
+  Bell,
+  Sun,
 } from "lucide-react";
 
 const ThreadsDashboard = () => {
-  // 模擬文章數據，與之前相同
-  const posts = [
-    {
-      id: 1,
-      content:
-        "[冷知識] 喝西芹汁讓我味覺改變？喝了西芹汁以及攝取大量蔬果一個多禮拜，今天突然想吃一下軟糖，是ACE的無糖Q軟 測驗，結果一咬下去一股化學藥味我直接吐出來😮，是比壓舌籤還嗆心的味道，但以前我超愛吃這個軟糖 其實大概喝西芹汁兩三天，我就注意到B群味道聞起來不一樣，以前覺得B群很臭，現在覺得他有一股香味... 神奇西芹汁",
-      time: "2025/02/12 03:18:11",
-      stats: {
-        views: 323,
-        comments: 6,
-        reposts: 0,
-        quotes: 0,
-        likes: 0,
-        shares: 0,
-      },
-    },
-    {
-      id: 2,
-      content:
-        "如果說分心是人的本能，當壓力大的時候用分心來控制自己的衝動，似乎是一個不錯的想法",
-      time: "2025/02/12 11:37:34",
-      stats: {
-        views: 317,
-        comments: 2,
-        reposts: 0,
-        quotes: 0,
-        likes: 0,
-        shares: 0,
-      },
-    },
-  ];
+  const [data] = useState([
+    { value: 4000 },
+    { value: 3000 },
+    { value: 5000 },
+    { value: 2780 },
+    { value: 4890 },
+    { value: 3390 },
+    { value: 6000 },
+    { value: 2390 },
+    { value: 3800 },
+  ]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 側邊導航 */}
-      <div className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 p-4">
+    <div className="flex h-screen bg-slate-50">
+      {/* 左側導航 */}
+      <nav className="w-64 bg-white border-r border-slate-200 p-4">
         <div className="flex items-center space-x-2 mb-8">
-          <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white">
-            TD
+          <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
+            <span className="text-white font-bold">TD</span>
           </div>
-          <span className="font-semibold">Threads Dashboard</span>
+          <span className="text-xl font-bold">Threads Dashboard</span>
         </div>
 
-        <nav className="space-y-2">
-          <button className="w-full flex items-center space-x-3 px-4 py-2 bg-gray-100 rounded-lg transition-colors">
-            <LayoutGrid size={20} />
-            <span>儀表板</span>
-          </button>
-          <button className="w-full flex items-center space-x-3 px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
-            <BarChart2 size={20} />
-            <span>分析</span>
-          </button>
-          <button className="w-full flex items-center space-x-3 px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
-            <FileText size={20} />
-            <span>串文</span>
-          </button>
-          <button className="w-full flex items-center space-x-3 px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
-            <Users size={20} />
-            <span>追蹤者</span>
-          </button>
-        </nav>
-      </div>
+        <div className="space-y-1">
+          {[
+            { icon: Layout, label: "儀表板", active: true },
+            { icon: BarChart2, label: "分析" },
+            { icon: FileText, label: "串文" },
+            { icon: Users, label: "追蹤者" },
+            { icon: MessageSquare, label: "反饋" },
+          ].map((item, index) => (
+            <div
+              key={index}
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg cursor-pointer
+                ${
+                  item.active
+                    ? "bg-slate-100 text-slate-900"
+                    : "text-slate-600 hover:bg-slate-50"
+                }`}
+            >
+              <item.icon className="w-5 h-5" />
+              <span>{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </nav>
 
       {/* 主要內容區 */}
-      <div className="ml-64 p-8">
-        {/* 頂部歡迎區 */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gray-200 rounded-full" />
-              <div>
-                <h2 className="text-xl font-semibold">pusheenlin</h2>
-                <p className="text-gray-500">追蹤者: 627</p>
+      <main className="flex-1 overflow-auto">
+        {/* 頂部導航 */}
+        <div className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold">嗨，歡迎回來 👋</h1>
+            <p className="text-slate-600">這是您的內容數據概覽</p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Bell className="w-5 h-5 text-slate-600" />
+            <Sun className="w-5 h-5 text-slate-600" />
+            <div className="w-8 h-8 bg-blue-500 rounded-full" />
+          </div>
+        </div>
+
+        <div className="p-8">
+          {/* 關鍵指標卡片 */}
+          <div className="grid grid-cols-3 gap-6 mb-8">
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-6 rounded-xl text-white">
+              <div className="flex justify-between mb-4">
+                <h3 className="text-slate-400 text-sm">瀏覽量</h3>
+                <span className="bg-slate-700/50 p-2 rounded-lg">
+                  <BarChart2 className="w-4 h-4" />
+                </span>
+              </div>
+              <div className="text-3xl font-bold mb-2">0</div>
+              <div className="text-sm text-green-400">
+                ↑ 15.4% increase this month
               </div>
             </div>
-            <button className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">
-              分享到 Threads
-            </button>
-          </div>
-        </div>
 
-        {/* 關鍵指標區 */}
-        <div className="bg-white rounded-lg shadow-sm mb-8">
-          <div className="border-b border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium">關鍵指標</h2>
-              <span className="text-sm text-gray-500">最近 7 天</span>
+            <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-6 rounded-xl text-white">
+              <div className="flex justify-between mb-4">
+                <h3 className="text-blue-200 text-sm">讚</h3>
+                <span className="bg-white/10 p-2 rounded-lg">
+                  <Users className="w-4 h-4" />
+                </span>
+              </div>
+              <div className="text-3xl font-bold mb-2">5</div>
+              <div className="text-sm text-blue-200">↑ 7.4% same as before</div>
             </div>
-          </div>
-          <div className="p-6">
-            <div className="text-center text-gray-600">
-              此功能僅適用於專業版方案。
-              <button className="block mx-auto mt-4 px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">
-                訂閱
-              </button>
-            </div>
-          </div>
-        </div>
 
-        {/* 最近申文區 */}
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="border-b border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium">最近 5 個串文</h2>
-              <button className="text-sm text-gray-500 hover:text-gray-700">
-                顯示全部
-              </button>
+            <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 p-6 rounded-xl text-white">
+              <div className="flex justify-between mb-4">
+                <h3 className="text-indigo-200 text-sm">轉發</h3>
+                <span className="bg-white/10 p-2 rounded-lg">
+                  <MessageSquare className="w-4 h-4" />
+                </span>
+              </div>
+              <div className="text-3xl font-bold mb-2">0</div>
+              <div className="text-sm text-red-400">↓ 15.4% less activity</div>
             </div>
           </div>
-          <div className="p-6">
-            <div className="space-y-6">
-              {posts.map((post) => (
-                <div
-                  key={post.id}
-                  className="border-b border-gray-100 pb-6 last:border-b-0"
-                >
-                  <div className="flex space-x-3">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0" />
-                    <div className="flex-grow">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium">pusheenlin</span>
-                        <span className="text-sm text-gray-500">
-                          {post.time}
-                        </span>
+
+          {/* 數據圖表區 */}
+          <div className="grid grid-cols-2 gap-6">
+            <div className="bg-white p-6 rounded-xl border border-slate-200">
+              <div className="flex justify-between items-center mb-6">
+                <div className="space-y-1">
+                  <h3 className="text-lg font-semibold">互動趨勢</h3>
+                  <p className="text-sm text-slate-500">
+                    Last 7 days analytics data
+                  </p>
+                </div>
+                <button className="flex items-center space-x-2 text-sm text-slate-600">
+                  <span>This week</span>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={data}>
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#6366F1"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl border border-slate-200">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-semibold">最近串文</h3>
+                <Settings className="w-5 h-5 text-slate-400" />
+              </div>
+              <div className="space-y-4">
+                {[1, 2].map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start space-x-4 p-4 rounded-lg hover:bg-slate-50"
+                  >
+                    <div className="w-10 h-10 bg-slate-200 rounded-full flex-shrink-0" />
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium">
+                          今天在寫程式又發現一件有趣的事
+                        </p>
+                        <span className="text-sm text-slate-500">2h ago</span>
                       </div>
-                      <p className="text-gray-800 mb-3">{post.content}</p>
-                      <div className="flex items-center space-x-6 text-gray-500">
-                        <div className="flex items-center space-x-2">
-                          <span>{post.stats.views}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <MessageCircle size={18} />
-                          <span>{post.stats.comments}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Repeat2 size={18} />
-                          <span>{post.stats.reposts}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Share2 size={18} />
-                          <span>{post.stats.shares}</span>
-                        </div>
+                      <p className="text-sm text-slate-600 line-clamp-2">
+                        常弄把一個主要功能寫好之後，我發現我卡在UI畫面的呈現很久，我知道可以用
+                        tailwind UI的漂亮樣板來做...
+                      </p>
+                      <div className="flex items-center space-x-4 text-sm text-slate-500">
+                        <span>0 瀏覽</span>
+                        <span>5 讚</span>
+                        <span>0 轉發</span>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

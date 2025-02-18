@@ -1,4 +1,4 @@
-import { useThreadsMedia } from "../../hooks/api/useThreadsMedia";
+import { useThreadsMedia } from "../../hooks/api/useMedia";
 export default function MetricCard() {
   const { mediaObjects, loading, error } = useThreadsMedia();
   if (loading) return <div>Loading...</div>;
