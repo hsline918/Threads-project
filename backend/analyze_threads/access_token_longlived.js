@@ -1,8 +1,10 @@
 //1. Long term access token
+import dotenv from "dotenv";
+dotenv.config(); //將數據載入
+
 function tokenService() {
-  const SHORT_LIVED_ACCESS_TOKEN =
-    "THAAP2bG4JYf5BYlYtR1ZA4dUJKeXpTQ3ZAYekJVVXdHZAVFvLTg4ZAFhXbEhSS2FiQmpzVGtUTmJVOE1zUFpKelQ0T051YmJSa094YTNpV1FlejMyNTU1Mkl5b0d3bTNvWERQSkJVbEhqWE9UMERsenBnYm8xeUNmT1M1bElBSHpsS0JfQU9Nc00wQ2djM28xRU81ODBsd3MwWWczUQZDZD";
-  const threads_app_secret = "4d13965c4d21bc0486a0d94fb2c61b33";
+  const SHORT_LIVED_ACCESS_TOKEN = process.env.THREADS_SHORT_LIVED_ACCESS_TOKEN;
+  const threads_app_secret = process.env.THREADS_APP_SECRET;
 
   let currentToken = null;
   let expireTime = null;

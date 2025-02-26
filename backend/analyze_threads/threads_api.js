@@ -1,7 +1,13 @@
 //第一部分：threads media object(由於quokka不支援import所以token我直接複製貼上access_token)
+import dotenv from "dotenv";
+dotenv.config(); //將數據載入
+
+const SHORT_LIVED_ACCESS_TOKEN = process.env.THREADS_SHORT_LIVED_ACCESS_TOKEN;
+console.log(SHORT_LIVED_ACCESS_TOKEN);
+// const threads_app_secret = process.env.THREADS_APP_SECRET;
 
 function threads_api() {
-  const media_object_url = `https://graph.threads.net/v1.0/me/threads?fields=id,media_product_type,media_type,media_url,permalink,owner,username,text,timestamp,shortcode,thumbnail_url,children,is_quote_post&limit=1&access_token=THAAP2bG4JYf5BYldfSjNCYlk1YTJiYzhNUUJwREhXdVBmdnhvOXpDRkZA4alJad0VFcmVyV1hZARGdXWmFhQklJOG1FdWRYdjZAURG95Mll5MnBRTVRBSFBSRUVVOVl4YlQwZAk1PMzQ4dEUyUVFpcS1fQjN5NDhLcGYydzRySFJfM1JmZAwZDZD`;
+  const media_object_url = `https://graph.threads.net/v1.0/me/threads?fields=id,media_product_type,media_type,media_url,permalink,owner,username,text,timestamp,shortcode,thumbnail_url,children,is_quote_post&limit=1&access_token=${SHORT_LIVED_ACCESS_TOKEN}`;
 
   async function retrieve_threads_media_objects() {
     try {
@@ -18,6 +24,7 @@ function threads_api() {
 }
 
 const threads_media_object_api = await threads_api();
+console.log(threads_media_object_api);
 const {
   data: [media],
 } = threads_media_object_api;
