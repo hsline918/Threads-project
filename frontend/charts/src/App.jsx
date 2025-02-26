@@ -5,6 +5,9 @@ import LinkBotton from "./components/linkbotton/LinkBotton";
 import MetricCard from "./components/MetricCard/MetricCard";
 import PostInsights from "./components/post insights/PostInsights";
 import Sidebar from "./components/sidebar/SideBar";
+import ThreadsAuth from "./components/auth/ThreadsAuth";
+import { router } from "./router/router";
+import { RouterProvider } from "react-router-dom";
 
 function App() {
   return (
@@ -13,9 +16,11 @@ function App() {
       {/* <ChartComponent /> */}
       {/* <FrontPage /> */}
       {/* <LinkBotton /> */}
-      <MetricCard />
+      {/* <MetricCard /> */}
       {/* <PostInsights /> */}
       {/* <Sidebar /> */}
+      {/* <ThreadsAuth /> */}
+      <RouterProvider router={router} />
     </div>
   );
 }
