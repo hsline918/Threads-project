@@ -20,7 +20,7 @@ export default function MetricCard() {
       <div>粉絲數: {metrics.followersCount}</div>
       <div>貼文互動率: {metrics.interactionRate}</div>
       <div>破圈率: {metrics.viralRate}</div>
-      <div>貼文觀看數: {permalink}</div>
+      <div>貼文連結: {permalink}</div>
     </div>
   );
 }

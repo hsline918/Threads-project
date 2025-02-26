@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import ThreadsAuth from "../components/auth/ThreadsAuth";
+import MetricCard from "../components/metriccard/MetricCard";
 
 export const router = createBrowserRouter([
   {
@@ -8,6 +9,6 @@ export const router = createBrowserRouter([
   },
   {
     path: "/callback",
-    element: <div>auth call back</div>,
+    element: <MetricCard />,
   },
 ]);
