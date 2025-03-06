@@ -1,9 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import ThreadsAuth from "../components/auth/ThreadsAuth";
-// import MetricCard from "../components/metriccard/MetricCard";
-import FrontPage from "../components/frontpage/Frontpage";
-import FansCard from "../components/frontpage/FansCard";
-import BestThreads from "../components/frontpage/BestThreads";
+
+import FrontPage from "../components/frontpage/DashboardLayout";
 
 export const router = createBrowserRouter([
   //1. Landing Page

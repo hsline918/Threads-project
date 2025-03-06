@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import path from "path";
 import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
@@ -13,4 +14,10 @@ export default defineConfig({
       cert: "./threads-sample.meta.pem", // 使用你的SSL證書
     },
   },
+  // resolve: {
+  //   alias: {
+  //     "@": path.resolve(__dirname, "./src"),
+  //     "@components": path.resolve(__dirname, "./src/components"),
+  //   },
+  // },
 });
